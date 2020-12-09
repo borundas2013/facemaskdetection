@@ -23,11 +23,13 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 
-normal_faces_img_directory='/content/drive/MyDrive/Colab Notebooks/MaskDetectionData/train/mask/'
-masked_face_img_directory ='/content/drive/MyDrive/Colab Notebooks/MaskDetectionData/train/nomask/'
-train_image_directory='/content/drive/MyDrive/Colab Notebooks/MaskDetectionData/train/'
-validation_image_directory='/content/drive/MyDrive/Colab Notebooks/MaskDetectionData/validation/'
-test_image_directory='/content/drive/MyDrive/Colab Notebooks/MaskDetectionData/test/'
+
+
+
+
+train_image_directory='datasets/train/'
+validation_image_directory='datasets/test/'
+test_image_directory='datasets/validation/'
 
 def display(img):
   fig = plt.figure(figsize=(8,6))
@@ -50,17 +52,7 @@ def display_gray(img):
   img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
   ax.imshow(img,cmap='gray')
 
-#normal_faces_images=loadImage(normal_faces_img_directory)
 
-#single_image=normal_faces_images[1]
-#display(single_image)
-
-#masked_faces=loadImage(masked_face_img_directory)
-
-from google.colab import drive
-drive.mount('/content/drive')
-
-#display(masked_faces[9])
 
 def image_genarator():
   image_gen=ImageDataGenerator(
@@ -72,7 +64,7 @@ def image_genarator():
   return image_gen
 
 image_gen = image_genarator()
-#display(image_gen.random_transform(masked_faces[9]))
+
 
 train_img_gen=image_gen.flow_from_directory(train_image_directory)
 
@@ -124,9 +116,9 @@ def prepare_validation_images():
 train_img_gen=prepare_train_images()
 validation_img_gen=prepare_validation_images()
 
-results= model.fit_generator(train_img_gen,epochs=6,steps_per_epoch=200,validation_data=validation_img_gen,validation_steps=20)
+results= model.fit(train_img_gen,epochs=2,steps_per_epoch=200,validation_data=validation_img_gen,validation_steps=20)
 
-model.save('/content/drive/MyDrive/Colab Notebooks/MaskDetectionData/maske_detection_model_phase1.h5')
+model.save('model/mask_detection_mdel_epoch2.hf')
 results.history['accuracy']
 
 def prepare_test_images():
@@ -137,7 +129,7 @@ def prepare_test_images():
 
 
 def detectface(img):
-  face_cascade=cv2.CascadeClassifier('/content/drive/MyDrive/Colab Notebooks/haarcasecades/haarcascades/haarcascade_frontalface_default.xml')
+  face_cascade=cv2.CascadeClassifier('haarscadefile/haarcascade_frontalface_default.xml')
   face_img = img.copy()
   face_img = cv2.cvtColor(face_img,cv2.COLOR_BGR2GRAY)
   face_rects= face_cascade.detectMultiScale(face_img, scaleFactor=1.1,
@@ -155,11 +147,4 @@ prediction=model.predict(test_image_gen,batch_size=16)
 
 evaluation_result=model.evaluate(test_image_gen,batch_size=2,verbose=1)
 
-testimg = image.load_img('/content/drive/MyDrive/Colab Notebooks/DemotestData/normal4.jpg', target_size=input_shape[:2])
-testimg = image.img_to_array(testimg)
-testimg = np.expand_dims(testimg, axis=0)
-testimg = testimg/255
-prediction=model.predict(testimg)
-prediction_class=model.predict_classes(testimg)
-print(prediction_class,prediction)
 
